@@ -63,7 +63,7 @@ bot.onText(/Result/, (msg) => {
         })
       };
 
-  bot.sendMessage(msg.chat.id, `Please enter Your r ID:`,opts);
+  bot.sendMessage(msg.chat.id, `Please enter Your ID:`,opts);
   getmessage1();
 });
 
@@ -78,7 +78,7 @@ bot.onText(/Current Performance/, (msg) => {
         })
       };
 
-  bot.sendMessage(msg.chat.id, `Please enter Your p ID:`,opts);
+  bot.sendMessage(msg.chat.id, `Please enter Your ID:`,opts);
   getmessage2();
 });
 
@@ -93,7 +93,7 @@ bot.onText(/Schedule/, (msg) => {
         })
       };
 
-  bot.sendMessage(msg.chat.id, `Please enter Your s ID:`,opts);
+  bot.sendMessage(msg.chat.id, `Please enter Your User-Name:`,opts);
   getmessage3();
 });
 
@@ -112,7 +112,7 @@ var getmessageResult = async () => {
         })
       };
       var resp = msg.text;
-      request(`http://172.16.0.16:8080/uni-schoolManagement/rest/ResultDataResource/getStudentCourseResultList?studentID=${resp}`,function(error,response,body){
+      request(`http://172.16.0.16:8080/uni-schoolManagement/rest/ResultDataResource/getStudentResultBySchoolId?SchoolId=${resp}`,function(error,response,body){
       //       console.error('error:', error);
       //       console.log('statusCode:', response && response.statusCode); // Print the response status code if a response was received
       // console.log('body:', body);
@@ -184,9 +184,21 @@ var getmessageSchedule = async () => {
           })
         };
         var resp = msg.text;
-        request(`http://172.16.0.16:8080/uni-schoolManagement/rest/ClassResource/getSectionScheduleBySectionName?sectionName=${resp}`,function(error,response,body){
+        request(`http://172.16.0.16:8080/uni-schoolManagement/rest/TeacherResource/getTeacherScheduleByUserName?userName=${resp}`,function(error,response,body){
            if(!error && response.statusCode ===200){
-               bot.sendMessage(msg.chat.id,body,opts);
+             var res = JSON.parse(body)
+             if (res.classDTO!==null){
+               if(res.classDTO.length!==0){
+             for(var i = 0; i< res.classDTO.length; i++){
+             var period = parseInt(res.classDTO[i].timeSlot.id, 10)-8;
+              bot.sendMessage(msg.chat.id,'Your shchedul list for today:\n weekDay:   '+ res.weekDay+ '\n grade:         '+ res.classDTO[i].sectiion.grade.grade+'\n section       '+res.classDTO[i].sectiion.section+'\n course:       '+res.classDTO[i].courses.course+'\n period:        '+period,opts);
+             }
+            }
+            else
+            bot.sendMessage(msg.chat.id, 'you have No class today');
+            }
+            else
+            bot.sendMessage(msg.chat.id, 'wrong or invalid user name please choose the option bellow and retry again.',opts);
            }
         })
        // bot.sendMessage(msg.chat.id, 'Thanks, Your Message Received', opts);
